@@ -6,6 +6,8 @@ import tui.quotes.demo.model.Quote;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
 
 @RestController
 @RequestMapping("/quotes")
@@ -32,9 +35,12 @@ public class QuoteController {
 	@GetMapping("/{id}")
 	public ResponseEntity<Quote> getQuoteById(@PathVariable String id) {
     	log.info(String.format("Searching for quote with id %s",id));
+    	Instant start = Instant.now();
     	try {
     		ResponseEntity<Quote> response = ResponseEntity.ok(service.findById(id));
-    		log.info("Quote found.");
+    		Instant end = Instant.now();
+    		Duration duration = Duration.between(start, end);
+    		log.info(String.format("1 quote found in %d miliseconds.", (duration.getNano()/1000000)));
     		return response;
     	} catch (Exception e) {
     		log.info("Quote not found.");
@@ -48,14 +54,22 @@ public class QuoteController {
 		//if author parameter is present, filter by it
 	    if(author != null) {
 	    	log.info(String.format("Searching for quotes by author %s.",author));
+	    	Instant start = Instant.now();
 	    	quotes = this.service.findByAuthor(author);
-	    	log.info(String.format("Found %d quotes by %s.",quotes.size(),author));
+    		Instant end = Instant.now();
+    		Duration duration = Duration.between(start, end);
+	    	log.info(String.format("Found %d quotes by %s in %d miliseconds.", 
+	    			quotes.size(), author, (duration.getNano()/1000000)));
 	    }
 	    //in the absence of filters, return all quotes
 	    else {
 			log.info("No filter provided in the request, retrieving all quotes.");
+	    	Instant start = Instant.now();
 			quotes = this.service.getAllQuotes();
-	    	log.info(String.format("Found %d quotes total.",quotes.size()));
+    		Instant end = Instant.now();
+    		Duration duration = Duration.between(start, end);
+	    	log.info(String.format("Found %d quotes total in %d miliseconds.",
+	    			quotes.size(), (duration.getNano()/1000000)));
 	    }
 	    return ResponseEntity.ok(quotes);
 	}
